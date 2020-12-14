@@ -1,35 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TrackerLibrary.DataAccess;
 
 namespace TrackerLibrary
 {
     public static class GlobalConfig
     {
-        /// <summary>
-        /// A List<IDataConnection> lets us handle multiple types of data connections, ie.
-        /// to .txt files or to SQL server or even something else later on.
-        /// </summary>
-        public static List<IDataConnection> Connections { get; private set; } = new List<IDataConnection>();
+        
+        public static IDataConnection Connection { get; private set; }
 
-        public static void InitialiseConnections(bool database, bool textFiles)
+        // Called in Program.cs when the program starts up.
+        public static void InitialiseConnections(DatabaseType db)
         {
-            if (database)
+            if (db == DatabaseType.SQL)
             {
                 // TODO - Set up the SQL connection properly.
                 SQLConnector sql = new SQLConnector();
-                Connections.Add(sql);
+                Connection = (sql);
             }
 
-            if (textFiles)
+            else if (db == DatabaseType.Textfile)
             {
                 // TODO - Create the text connection properly.
 
                 TextConnector text = new TextConnector();
-                Connections.Add(text);
+                Connection = (text);
             }
+        }
+
+        /// <summary>
+        /// Goes into the app.config file and retrives the connection string.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string ConnectionString(string name)
+        {
+            return ConfigurationManager.ConnectionStrings[name].ConnectionString;
         }
     }
 }

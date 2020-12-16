@@ -20,7 +20,9 @@ namespace TrackerUI
 
             // Initialise the 2 database connections, assuming the user want to write to
             // both a database and a text file.
-            TrackerLibrary.GlobalConfig.InitialiseConnections(DatabaseType.SQL);
+
+            // Now initialising a TextFile connection instead of SQL
+            TrackerLibrary.GlobalConfig.InitialiseConnections(DatabaseType.Textfile);
 
             Application.Run(new CreatePrizeForm()); // for testing
             //Application.Run(new TournamentDashboardForm());

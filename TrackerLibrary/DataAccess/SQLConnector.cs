@@ -36,7 +36,7 @@ namespace TrackerLibrary.DataAccess
                 // ParameterDirection.Output
                 p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-                // Executing the stored procedure "dbo.spPrizes_Insert" using the parameter p 
+                // Executing the stored procedure "dbo.spPrizes_Insert" using the dynamic parameter p 
                 // set above using Dapper.
                 connection.Execute("dbo.spPrizes_Insert", p, commandType: CommandType.StoredProcedure);
 

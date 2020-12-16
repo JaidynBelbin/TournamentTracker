@@ -13,22 +13,22 @@ namespace TrackerLibrary
         
         public static IDataConnection Connection { get; private set; }
 
-        // Called in Program.cs when the program starts up.
+        // Called in Program.cs when the program starts up, and initialises either the SQL
+        // connection or a text connection, depending on what the user chooses.
         public static void InitialiseConnections(DatabaseType db)
         {
             if (db == DatabaseType.SQL)
             {
-                // TODO - Set up the SQL connection properly.
+                // Create an SQL connection and run SQLConnector.CreatePrize()
                 SQLConnector sql = new SQLConnector();
-                Connection = (sql);
+                Connection = sql;
             }
 
             else if (db == DatabaseType.Textfile)
             {
-                // TODO - Create the text connection properly.
-
+                // Create a text connection and run TextConnector.CreatePrize()
                 TextConnector text = new TextConnector();
-                Connection = (text);
+                Connection = text;
             }
         }
 

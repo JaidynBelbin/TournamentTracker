@@ -11,6 +11,7 @@ namespace TrackerLibrary
     public static class GlobalConfig
     {
         
+        // Connection is either the SQLConnector class or the TextConnector class depending on what the user choooses.
         public static IDataConnection Connection { get; private set; }
 
         // Called in Program.cs when the program starts up, and initialises either the SQL
@@ -20,15 +21,16 @@ namespace TrackerLibrary
             if (db == DatabaseType.SQL)
             {
                 // Create an SQL connection and run SQLConnector.CreatePrize()
-                SQLConnector sql = new SQLConnector();
-                Connection = sql;
+                // SQLConnector sql = new SQLConnector();
+                Connection = new SQLConnector();
+
             }
 
             else if (db == DatabaseType.Textfile)
             {
                 // Create a text connection and run TextConnector.CreatePrize()
-                TextConnector text = new TextConnector();
-                Connection = text;
+                // TextConnector text = new TextConnector();
+                Connection = new TextConnector();
             }
         }
 

@@ -9,6 +9,11 @@ namespace TrackerLibrary.Models
     public class PersonModel
     {
         /// <summary>
+        /// The unique identifer for the person.
+        /// </summary>
+        public int ID { get; set; }
+
+        /// <summary>
         /// The person's first name.
         /// </summary>
         public string FirstName { get; set; }
@@ -29,5 +34,19 @@ namespace TrackerLibrary.Models
         /// </summary>
         public string CellphoneNumber { get; set; }
 
+        public string FullName { get => $"{FirstName} {LastName}"; }
+
+        // Default constructor
+        public PersonModel() {}
+
+        // Overloaded constructor
+        public PersonModel(string firstName, string lastName, string emailAddress, string cellPhoneNumber)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            EmailAddress = emailAddress;
+            CellphoneNumber = cellPhoneNumber;
+
+        }
     }
 }

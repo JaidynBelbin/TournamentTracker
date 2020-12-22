@@ -5,13 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using TrackerLibrary.Models;
 
+/// <summary>
+/// An interface for methods relating to data connections, ie. SQL or a textfile.
+/// </summary>
 namespace TrackerLibrary.DataAccess
 {
     public interface IDataConnection
     {
-        // Method called when the Create Prize button is clicked
-        // TODO - Probably will add methods to create TeamModel, TournamentModel, etc.
         PrizeModel CreatePrize(PrizeModel model);
-
+        PersonModel CreatePerson(PersonModel person);
+        TeamModel CreateTeam(TeamModel team);
+        List<PersonModel> GetPerson_All();
     }
 }

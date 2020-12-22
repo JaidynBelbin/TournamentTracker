@@ -60,7 +60,7 @@ namespace TrackerUI
 
             // Trying to parse the input to an int and returning it in the placeNumber variable.
             bool placeNumberValidNumber = int.TryParse(placeNumberValue.Text, out placeNumber);
-
+             
             // Dealing invalid inputs.
             if (!placeNumberValidNumber)
             {

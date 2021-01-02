@@ -138,11 +138,7 @@ namespace TrackerUI
             };
 
             TournamentLogic.CreateRounds(tournament);
-                                
-
-
-
-
+                               
 
             // Create Tournament entry
             // Create all of the prize entries

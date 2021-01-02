@@ -9,30 +9,84 @@ namespace TrackerLibrary
 {
     public static class TournamentLogic
     {
-        private static Random rng = new Random();
+        private static readonly Random rng = new Random();
+
+        public static void CreateRounds(TournamentModel model)
+        {
+            // Randomising the teams
+            List<TeamModel> randomisedTeams = Randomise(model.EnteredTeams);
+
+            // Finding the number of rounds we need and whether or not we need to
+            // include a bye in the first round.
+            int rounds = FindNumberOfRounds(randomisedTeams.Count);
+            int byes = FindNumberOfByes(rounds, randomisedTeams.Count);
+
+            // int rounds = Math.DivRem(model.EnteredTeams.Count, 2, out int byes);
+
+            // Creating the first round of matchups in our tournament
+            model.Rounds.Add(CreateFirstRound(byes, randomisedTeams));
+
+            // Creating all subsequent rounds
+            CreateNextRounds(model, rounds);
+        }
 
         /// <summary>
         /// Method that randomises a given List<TeamModel>. 
         /// </summary>
         /// <typeparam name="TeamModel"></typeparam>
         /// <param name="list"></param>
-        private static List<TeamModel> Randomise(List<TeamModel> list)
+        //private static List<TeamModel> Randomise(List<TeamModel> list)
+        //{
+
+        //    int n = list.Count;
+
+        //    while (n > 1)
+        //    {
+        //        n--;
+        //        int k = rng.Next(n + 1); // return random number that is greater than or equal to 0
+        //                                 // but less than n + 1.
+
+        //        TeamModel value = list[k]; // 
+        //        list[k] = list[n];         // swapping the values at indexes k and n
+        //        list[n] = value;           // 
+        //    }
+
+        //    return list;
+        //}
+
+        private static List<TeamModel> Randomise(List<TeamModel> teams)
         {
+            return teams.OrderBy(x => Guid.NewGuid()).ToList();
+        }
 
-            int n = list.Count;
+        private static int FindNumberOfRounds(int teamCount)
+        {
+            int output = 1;
+            int val = 2;
 
-            while (n > 1)
+            while (val < teamCount)
             {
-                n--;
-                int k = rng.Next(n + 1); // return random number that is greater than or equal to 0
-                                         // but less than n + 1.
-
-                TeamModel value = list[k]; // 
-                list[k] = list[n];         // swapping the values at indexes k and n
-                list[n] = value;           // 
+                output += 1;
+                val *= 2;
             }
 
-            return list;
+            return output;
+        }
+
+        private static int FindNumberOfByes(int rounds, int teamCount)
+        {
+
+            int output = 0;
+            int totalTeams = 1;
+
+            for (int i = 1; i <= rounds; i++)
+            {
+                totalTeams *= 2;
+            }
+
+            output = totalTeams - teamCount;
+
+            return output;
         }
 
         // Pairing the teams up into matchups, accounting for any byes that need to be used
@@ -58,9 +112,13 @@ namespace TrackerLibrary
                     currentMatch = new MatchupModel();
 
                     // The bye is assigned, so decrement it to 0. Next time we come
-                    // to this for loop, byes will be 0, so only need to check if there's
+                    // to this loop, byes will be 0, so only need to check if there's
                     // 2 teams in the match or not.
-                    byes -= 1;
+
+                    if (byes > 0)
+                    {
+                        byes -= 1;
+                    }
                 }
             }
 
@@ -71,7 +129,7 @@ namespace TrackerLibrary
         {
             
             // Will always start with the second round, the initial round is created in a
-            // separate method
+            // separate method.
             int round = 2;
 
             // Initially, previousRound is the first round
@@ -100,7 +158,6 @@ namespace TrackerLibrary
 
                         // Resetting the currentMatch
                         currentMatch = new MatchupModel();
-
                     }
                 }
 
@@ -109,27 +166,10 @@ namespace TrackerLibrary
                 // Incrementing the round
                 previousRound = currentRound;
 
-                // Resetting the current round to 0 matches
+                // Resetting the current round to 0 matches and incrementing the round number
                 currentRound = new List<MatchupModel>();
-                rounds += 1;
+                round += 1;
             }
-        }
-
-        public static void CreateRounds(TournamentModel model)
-        {
-            // Randomising the teams
-            List<TeamModel> randomisedTeams = Randomise(model.EnteredTeams);
-
-            // Finding the number of rounds we need and whether or not we need to
-            // include a bye in the first round.
-            int rounds = Math.DivRem(model.EnteredTeams.Count, 2, out int byes);
-
-            // Creating the first round of matchups in our tournament
-            model.Rounds.Add(CreateFirstRound(byes, randomisedTeams));
-
-            // Creating all subsequent rounds
-            CreateNextRounds(model, rounds);
-
         }
     }
 }

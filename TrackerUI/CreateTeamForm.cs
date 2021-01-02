@@ -17,12 +17,16 @@ namespace TrackerUI
 
         private List<PersonModel> availableTeamMembers = GlobalConfig.Connection.GetPerson_All();
         private List<PersonModel> selectedTeamMembers = new List<PersonModel>();
+        private ITeamRequester callingForm;
 
-        public CreateTeamForm()
+        // Passing in *anything* that implements ITeamRequester into the constructor of this form
+        // in order to hand back the completed TeamModel.
+        public CreateTeamForm(ITeamRequester caller)
         {
             InitializeComponent();
 
-            //CreateSampleData();
+            // Assigning the calling form.
+            callingForm = caller;
 
             WireUpLists();
         }
@@ -39,17 +43,6 @@ namespace TrackerUI
 
             teamMembersListBox.DataSource = selectedTeamMembers;
             teamMembersListBox.DisplayMember = "FullName";
-        }
-
-        // Just to populate the Views for testing purposes
-        private void CreateSampleData()
-        {
-            availableTeamMembers.Add(new PersonModel { FirstName = "John", LastName = "Corey" });
-            availableTeamMembers.Add(new PersonModel { FirstName = "Richard", LastName = "Foreman" });
-            availableTeamMembers.Add(new PersonModel { FirstName = "Mark", LastName = "Wilder" });
-
-            selectedTeamMembers.Add(new PersonModel { FirstName = "Joe", LastName = "Smith" });
-            selectedTeamMembers.Add(new PersonModel { FirstName = "Matt", LastName = "Baldwin" });
         }
 
         private void createMemberButton_Click(object sender, EventArgs e)
@@ -82,7 +75,6 @@ namespace TrackerUI
                 MessageBox.Show("You need to fill in all the fields.");
             }
         }
-
 
         private bool ValidateForm()
         {
@@ -123,9 +115,9 @@ namespace TrackerUI
             {
                 availableTeamMembers.Remove(p);
                 selectedTeamMembers.Add(p);
-            }
 
-            WireUpLists();
+                WireUpLists();
+            }
         }
        
 
@@ -156,17 +148,20 @@ namespace TrackerUI
                 team.TeamName = teamNameValue.Text;
                 team.TeamMembers = selectedTeamMembers;
 
-                // Creating the team.
+                // Creates a new Connection and calls the necessary CreateTeam method
+                // from either SQLConnector or TextConnector
                 GlobalConfig.Connection.CreateTeam(team);
 
-                MessageBox.Show($"{teamNameValue.Text} has been created!");
+                // Passing the created team back to the TeamComplete method in the calling form.
+                callingForm.TeamComplete(team);
+
+                // Closing the form.
+                this.Close();
 
             } else
             {
                 MessageBox.Show("Please provide a team name and \nselect at least one team member!");
             }
-            
-            // TODO - If not closing the form after creation, reset the form.
         }
     }
 }

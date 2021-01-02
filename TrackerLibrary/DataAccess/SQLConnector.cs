@@ -49,8 +49,6 @@ namespace TrackerLibrary.DataAccess
             }
         }
 
-        // TODO - Make the CreatePrize method actually save to the database.
-
         /// <summary>
         /// Saves a new prize to the database
         /// </summary>
@@ -120,6 +118,64 @@ namespace TrackerLibrary.DataAccess
             }
         }
 
+        public void CreateTournament(TournamentModel model)
+        {
+            using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
+            {
+                SaveTournament(model, connection);
+
+                SaveTournamentPrizes(model, connection);
+
+                SaveTournamentEntries(model, connection);
+            }
+        }
+
+        // Methods to save the tournament data, tournament prizes and tournament team entries into their
+        // respective databases.
+        private void SaveTournament(TournamentModel model, IDbConnection connection)
+        {
+            var p = new DynamicParameters();
+
+            p.Add("@TournamentName", model.TournamentName);
+            p.Add("@EntryFee", model.EntryFee);
+
+            p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            connection.Execute("dbo.spTournaments_Insert", p, commandType: CommandType.StoredProcedure);
+
+            model.ID = p.Get<int>("@id");
+        }
+
+        private void SaveTournamentPrizes(TournamentModel model, IDbConnection connection)
+        {
+            // Inserting each of the tournament prizes into the TournamentPrizes database
+            foreach (PrizeModel prize in model.Prizes)
+            {
+                var p = new DynamicParameters();
+
+                p.Add("@TournamentId", model.ID);
+                p.Add("@PrizeId", prize.ID);
+                p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                connection.Execute("dbo.spTournamentPrizes_Insert", p, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        private void SaveTournamentEntries(TournamentModel model, IDbConnection connection)
+        {
+            // Inserting each of the tournament entries into the TournamentEntries database
+            foreach (TeamModel team in model.EnteredTeams)
+            {
+                var p = new DynamicParameters();
+
+                p.Add("@TournamentId", model.ID);
+                p.Add("@TeamId", team.ID);
+                p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                connection.Execute("dbo.spTournamentEntries_Insert", p, commandType: CommandType.StoredProcedure);
+            }
+        }
+
         // Executing the spPeople_GetAll query and returning the List<PersonModel> that it fills out.
         public List<PersonModel> GetPerson_All()
         {
@@ -128,6 +184,29 @@ namespace TrackerLibrary.DataAccess
             using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
                 output = connection.Query<PersonModel>("dbo.spPeople_GetAll").ToList();
+            }
+
+            return output;
+        }
+
+        // Executing the spTeam_GetAll query and returning the List<TeamModel> that it fills out. Also need
+        // the team members associated with each team.
+        public List<TeamModel> GetTeam_All()
+        {
+            List<TeamModel> output;
+
+            using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
+            {
+                output = connection.Query<TeamModel>("dbo.spTeam_GetAll").ToList();
+
+                // Getting the the team members (People) associated with each team.
+                foreach (TeamModel team in output)
+                {
+                    var p = new DynamicParameters();
+                    p.Add("@TeamId", team.ID);
+
+                    team.TeamMembers = connection.Query<PersonModel>("dbo.spTeamMembers_GetByTeam", p, commandType: CommandType.StoredProcedure).ToList();
+                }
             }
 
             return output;

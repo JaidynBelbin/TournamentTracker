@@ -91,10 +91,12 @@ namespace TrackerLibrary.DataAccess.TextHelpers
 
             foreach (string line in lines)
             {
+                // Splitting each string at the commas and putting the values into an array.
                 string[] cols = line.Split(',');
 
                 PersonModel p = new PersonModel();
 
+                // Filling out a PersonModel with the values from the array.
                 p.ID = int.Parse(cols[0]);
                 p.FirstName = cols[1];
                 p.LastName = cols[2];
@@ -105,8 +107,94 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             }
             
             return output;
-
         }
+
+        public static List<TeamModel> ConvertToTeamModels(this List<string> lines, string peopleFileName)
+        {
+            // team id, team name, list of people id's separated by a pipe, eg.
+            // 3, Red Team, 1|3|5
+
+            List<TeamModel> output = new List<TeamModel>();
+            List<PersonModel> people = peopleFileName.FullFilePath().LoadFile().ConvertToPersonModels();
+
+            foreach (string line in lines)
+            {
+                string[] cols = line.Split(',');
+
+                // Getting the team ID and name into a new TeamModel
+                TeamModel t = new TeamModel();
+                t.ID = int.Parse(cols[0]);
+                t.TeamName = cols[1];
+
+                // Putting each of the team member IDs into a separate array.
+                string[] personIDs = cols[2].Split('|');
+
+                // Take the List of people from the textfile and search for where the id of the Person
+                // in the List equals each id in the personIDs array and add them to the List<PersonModel>
+                // in the TeamModel. 
+                // Returns null if it cannot find the matching person.
+                foreach (string id in personIDs)
+                {
+                    t.TeamMembers.Add(people.Where(x => x.ID == int.Parse(id)).First());
+                }
+
+                output.Add(t);
+            }
+
+            return output;
+        }
+
+        public static List<TournamentModel> ConvertToTournamentModels(this List<string> lines, 
+            string teamFileName, 
+            string peopleFileName,
+            string prizeFileName)
+        {
+
+            List<TournamentModel> output = new List<TournamentModel>();
+            List<TeamModel> teams = teamFileName.FullFilePath().LoadFile().ConvertToTeamModels(peopleFileName);
+            List<PrizeModel> prizes = prizeFileName.FullFilePath().LoadFile().ConvertToPrizeModels();
+
+
+            foreach (string line in lines)
+            {
+                string[] cols = line.Split(',');
+
+                TournamentModel t = new TournamentModel()
+                {
+                    ID = int.Parse(cols[0]),
+                    TournamentName = cols[1],
+                    EntryFee = decimal.Parse(cols[2])
+                };
+
+                string[] teamIDs = cols[3].Split('|');
+
+                foreach(string id in teamIDs)
+                {
+                    // Looks through the list of Teams and provides the ones where the id's match
+                    // the id's of the Teams in our TournamentModel.
+
+                    t.EnteredTeams.Add(teams.Where(x => x.ID == int.Parse(id)).First());
+                }
+
+                string[] prizeIDs = cols[4].Split('|');
+
+                foreach (string id in prizeIDs)
+                {
+                    // Looks through the list of Prizes and provides the ones where the id's match
+                    // the id's of the Prizes in our TournamentModel.
+
+                    t.Prizes.Add(prizes.Where(x => x.ID == int.Parse(id)).First());
+                }
+
+                // TODO - Capture round information.
+
+                output.Add(t);
+            }
+
+            return output;
+        }
+
+        // SAVE METHODS //
 
         public static void SaveToPersonFile(this List<PersonModel> models, string fileName)
         {
@@ -157,41 +245,127 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             File.WriteAllLines(fileName.FullFilePath(), lines);
         }
 
-        public static List<TeamModel> ConvertToTeamModels(this List<string> lines, string peopleFileName)
+        public static void SaveToTournamentFile(this List<TournamentModel> models, string fileName)
         {
-            // team id, team name, list of people id's separated by a pipe, eg.
-            // 3, Red Team, 1|3|5
+            List<String> lines = new List<string>();
 
-            List<TeamModel> output = new List<TeamModel>();
-            List<PersonModel> people = peopleFileName.FullFilePath().LoadFile().ConvertToPersonModels();
-
-            foreach (string line in lines)
+            // Putting the information into a string of the form: 
+            // ID,TournamentName,EntryFee,
+            // (id|id|id - list of entered teams),
+            // (id|id|id - list of prizes),
+            // (id^id^id|id^id^id|id^id^id - list of rounds, ie. list of list of matchups)
+            foreach (TournamentModel tm in models)
             {
-                string[] cols = line.Split(',');
-
-                // Getting the team ID and name into a new TeamModel
-                TeamModel t = new TeamModel();
-                t.ID = int.Parse(cols[0]);
-                t.TeamName = cols[1];
-
-                // Putting each of the team member IDs into a separate array.
-                string[] personIDs = cols[2].Split('|');
-
-                // Take the List of people from the textfile and search for where the id of the Person
-                // in the List equals each id in the personIDs array and add them to the List<PersonModel>
-                // in the TeamModel. 
-                // Returns null if it cannot find the matching person.
-                foreach (string id in personIDs)
-                {
-                    t.TeamMembers.Add(people.Where(x => x.ID == int.Parse(id)).First());
-                }
+                lines.Add($@"{tm.ID},{tm.TournamentName},
+                             {tm.EntryFee},
+                             {ConvertTeamListToIDString(tm.EnteredTeams)},
+                             {ConvertPrizeListToIDString(tm.Prizes)},
+                             {ConvertRoundListToMatchupString(tm.Rounds)}");
             }
+
+            // Providing the full file path of fileName, and providing the List<string> to
+            // write to the file.
+            File.WriteAllLines(fileName.FullFilePath(), lines);
+        }
+
+
+
+
+        // HELPER METHODS ///
+        // TODO - Refactor these methods into one method that uses generics.
+
+        // Returns the IDs of all the teams from the given list in the format: 1|2|3 etc. 
+        private static string ConvertTeamListToIDString(List<TeamModel> teams)
+        {
+            string output = "";
+
+            if (teams.Count == 0)
+            {
+                return "";
+            }
+
+            // Concatenating each ID
+            foreach (TeamModel t in teams)
+            {
+                output += $"{t.ID}|";
+            }
+
+            // Removing the trailing pipe character.
+            output = output.Substring(0, output.Length - 1);
 
             return output;
         }
 
-        // Returns the IDs of all the team members the given list in the format: 1|2|3 etc. 
-        
+        // Returns the IDs of all the prizes from the given list in the format: 1|2|3 etc. 
+        private static string ConvertPrizeListToIDString(List<PrizeModel> prizes)
+        {
+            string output = "";
+
+            if (prizes.Count == 0)
+            {
+                return "";
+            }
+
+            // Concatenating the IDs
+            foreach (PrizeModel p in prizes)
+            {
+                output += $"{p.ID}|";
+            }
+
+            // Removing the trailing pipe character.
+            output = output.Substring(0, output.Length - 1);
+
+            return output;
+        }
+
+        // Converts the given list of rounds into a string containing the IDs of all the matchups,
+        // which we then need to split again.
+        private static string ConvertRoundListToMatchupString(List<List<MatchupModel>> rounds)
+        {
+            // Rounds - id^id^id|id^id^id|id^id^id
+            string output = "";
+
+            if (rounds.Count == 0)
+            {
+                return "";
+            }
+
+            
+            foreach (List<MatchupModel> r in rounds)
+            {
+                output += $"{ConvertMatchupListToIDString(r)}|"; // Each group of matchups (id^id^id) separated by a pipe to yield above ID string
+            }
+
+            // Removing the trailing pipe character.
+            output = output.Substring(0, output.Length - 1);
+
+            return output;
+        }
+
+        // Returns the IDs of all the matches from the given MatchupModel list in the format: 1^2^3 etc. 
+        private static object ConvertMatchupListToIDString(List<MatchupModel> matchups)
+        {
+            // Matchups - id^id^id
+            string output = "";
+
+            if (matchups.Count == 0)
+            {
+                return "";
+            }
+
+            // Concatenating the IDs of the matches.
+            foreach (MatchupModel m in matchups)
+            {
+                output += $"{m.ID}^";
+            }
+
+            // Removing the trailing pipe character.
+            output = output.Substring(0, output.Length - 1);
+
+            return output;
+        }
+
+        // Returns the IDs of all the team members the given Person list in the format: 1|2|3 etc. 
         private static string ConvertPeopleListToIDString(List<PersonModel> people)
         {
             string output = "";
@@ -208,9 +382,10 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             }
 
             // Removing the trailing pipe character.
-            output = output.Substring(0, output.Length - 1);
+            output = output.Substring(0, output.Length - 1); 
 
             return output;
         }
+
     }
 }

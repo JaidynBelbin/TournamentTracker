@@ -24,7 +24,7 @@ namespace TrackerUI
             // Now initialising a TextFile connection instead of SQL
             TrackerLibrary.GlobalConfig.InitialiseConnections(DatabaseType.Textfile);
 
-            Application.Run(new CreateTeamForm()); // for testing
+            Application.Run(new CreateTournamentForm()); // for testing
             //Application.Run(new TournamentDashboardForm());
         }
     }

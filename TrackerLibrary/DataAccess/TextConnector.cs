@@ -14,7 +14,7 @@ namespace TrackerLibrary.DataAccess
         private const string PrizesFile = "PrizeModels.csv";
         private const string PeopleFile = "PersonModels.csv";
         private const string TeamFile = "TeamModels.csv";
-
+        private const string TournamentFile = "TournamentModels.csv";
 
         /// <summary>
         /// Saves a new person to a text file.
@@ -23,7 +23,7 @@ namespace TrackerLibrary.DataAccess
         /// <returns>The person information, including their unique identifier.</returns>
         public PersonModel CreatePerson(PersonModel person)
         {
-            // Getting the full file path, loading the file, and converting the file to a list of PersonModel
+            // Getting the full file path, reading the file into a List<string>, and converting the List<string> to a List<PersonModel>
             List<PersonModel> people = PeopleFile.FullFilePath().LoadFile().ConvertToPersonModels();
 
             int currentID = 1;
@@ -57,7 +57,7 @@ namespace TrackerLibrary.DataAccess
             // Load the text file
             // Convert the text to a List<PrizeModel>
             List<PrizeModel> prizes = PrizesFile.FullFilePath().LoadFile().ConvertToPrizeModels();
-
+ 
             // Finds the highest ID in the list, and adds 1 to it to make the new ID,
             // since text files do not increment IDs for us.
             int currentID = 1;
@@ -102,11 +102,36 @@ namespace TrackerLibrary.DataAccess
             return team;
         }
 
+        public void CreateTournament(TournamentModel model)
+        {
+            List<TournamentModel> tournaments = TournamentFile.
+                FullFilePath().
+                LoadFile().
+                ConvertToTournamentModels(TeamFile, PeopleFile, PrizesFile);
+
+            int currentID = 1;
+
+            if (tournaments.Count > 0)
+            {
+                currentID = tournaments.OrderByDescending(x => x.ID).First().ID + 1;
+            }
+
+            tournaments.Add(model);
+
+            tournaments.SaveToTournamentFile(TournamentFile);
+        }
+
         public List<PersonModel> GetPerson_All()
         {
             // Reading all the people out of the text file.
             return PeopleFile.FullFilePath().LoadFile().ConvertToPersonModels();
 
+
+        }
+
+        public List<TeamModel> GetTeam_All()
+        {
+            return TeamFile.FullFilePath().LoadFile().ConvertToTeamModels(PeopleFile);
 
         }
     }

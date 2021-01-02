@@ -15,9 +15,14 @@ namespace TrackerUI
 {
     public partial class CreatePrizeForm : Form
     {
-        public CreatePrizeForm()
+        // Passing in *anything* that implements IPrizeRequester into the constructor of this form
+        // in order to hand back the completed PrizeModel.
+        IPrizeRequester callingForm;
+        public CreatePrizeForm(IPrizeRequester caller)
         {
             InitializeComponent();
+
+            callingForm = caller;
         }
 
         private void createPrizeButton_Click(object sender, EventArgs e)
@@ -33,16 +38,13 @@ namespace TrackerUI
                     prizePercentageValue.Text);
 
                 // Creates a new Connection and calls the necessary CreatePrize method
-                // in either SQLConnector or TextConnector
+                // from either SQLConnector or TextConnector
                 GlobalConfig.Connection.CreatePrize(model);
 
-                // Resetting the values to default.
-                placeNameValue.Text = "";
-                placeNumberValue.Text = "";
-                prizeAmountValue.Text = "0";
-                prizePercentageValue.Text = "0";
+                // Passing the completed model back to the PrizeComplete method in the calling form.
+                callingForm.PrizeComplete(model);
 
-                MessageBox.Show("Prize successfully created!");
+                this.Close();
 
             } else
             {

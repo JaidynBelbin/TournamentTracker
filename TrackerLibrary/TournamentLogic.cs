@@ -35,29 +35,29 @@ namespace TrackerLibrary
         /// </summary>
         /// <typeparam name="TeamModel"></typeparam>
         /// <param name="list"></param>
-        //private static List<TeamModel> Randomise(List<TeamModel> list)
-        //{
-
-        //    int n = list.Count;
-
-        //    while (n > 1)
-        //    {
-        //        n--;
-        //        int k = rng.Next(n + 1); // return random number that is greater than or equal to 0
-        //                                 // but less than n + 1.
-
-        //        TeamModel value = list[k]; // 
-        //        list[k] = list[n];         // swapping the values at indexes k and n
-        //        list[n] = value;           // 
-        //    }
-
-        //    return list;
-        //}
-
-        private static List<TeamModel> Randomise(List<TeamModel> teams)
+        private static List<TeamModel> Randomise(List<TeamModel> list)
         {
-            return teams.OrderBy(x => Guid.NewGuid()).ToList();
+
+            int n = list.Count;
+
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1); // return random number that is greater than or equal to 0
+                                         // but less than n + 1.
+
+                TeamModel value = list[k]; // 
+                list[k] = list[n];         // swapping the values at indexes k and n
+                list[n] = value;           // 
+            }
+
+            return list;
         }
+
+        //private static List<TeamModel> Randomise(List<TeamModel> teams)
+        //{
+        //    return teams.OrderBy(x => Guid.NewGuid()).ToList();
+        //}
 
         private static int FindNumberOfRounds(int teamCount)
         {

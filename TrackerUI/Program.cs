@@ -22,7 +22,7 @@ namespace TrackerUI
             // both a database and a text file.
 
             // Now initialising a TextFile connection instead of SQL
-            TrackerLibrary.GlobalConfig.InitialiseConnections(DatabaseType.SQL);
+            TrackerLibrary.GlobalConfig.InitialiseConnections(DatabaseType.Textfile);
 
             Application.Run(new CreateTournamentForm()); // for testing
             //Application.Run(new TournamentDashboardForm());

@@ -37,5 +37,40 @@ namespace TrackerLibrary.Models
         /// </summary>
         public int MatchupRound { get; set; }
 
+        /// <summary>
+        /// Property that holds the display name of the match. 
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                string output = "";
+
+                foreach (MatchupEntryModel entry in Entries)
+                {
+                    // If one or both of the teams is null, ie. undecided, then display a message saying
+                    // the match is not yet decided, otherwise, loop through each entry and interpolate the
+                    // team names.
+                    if (entry.TeamCompeting != null)
+                    {
+                        if (output.Length == 0)
+                        {
+                            output = entry.TeamCompeting.TeamName;
+                        }
+                        else
+                        {
+                            output += $" vs. {entry.TeamCompeting.TeamName}";
+                        } 
+
+                    } else
+                    {
+                        output = "Matchup Not Yet Decided";
+                        break;
+                    }
+                }
+
+                return output;
+            }
+        }
     }
 }

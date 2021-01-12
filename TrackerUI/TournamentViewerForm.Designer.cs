@@ -100,6 +100,7 @@ namespace TrackerUI
             this.unplayedOnlyCheckbox.TabIndex = 4;
             this.unplayedOnlyCheckbox.Text = "Unplayed Only";
             this.unplayedOnlyCheckbox.UseVisualStyleBackColor = true;
+            this.unplayedOnlyCheckbox.CheckedChanged += new System.EventHandler(this.unplayedOnlyCheckbox_CheckedChanged);
             // 
             // matchupListBox
             // 
@@ -140,6 +141,7 @@ namespace TrackerUI
             this.teamOneScoreValue.Name = "teamOneScoreValue";
             this.teamOneScoreValue.Size = new System.Drawing.Size(100, 35);
             this.teamOneScoreValue.TabIndex = 8;
+            this.teamOneScoreValue.Text = "0";
             // 
             // teamTwoScoreValue
             // 
@@ -147,6 +149,7 @@ namespace TrackerUI
             this.teamTwoScoreValue.Name = "teamTwoScoreValue";
             this.teamTwoScoreValue.Size = new System.Drawing.Size(100, 35);
             this.teamTwoScoreValue.TabIndex = 11;
+            this.teamTwoScoreValue.Text = "0";
             // 
             // teamTwoScoreLabel
             // 
@@ -195,6 +198,7 @@ namespace TrackerUI
             this.scoreButton.TabIndex = 13;
             this.scoreButton.Text = "Score";
             this.scoreButton.UseVisualStyleBackColor = true;
+            this.scoreButton.Click += new System.EventHandler(this.scoreButton_Click);
             // 
             // TournamentViewerForm
             // 

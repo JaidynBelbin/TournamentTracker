@@ -11,7 +11,7 @@ namespace TrackerLibrary
     public static class GlobalConfig
     {
 
-        // Location where we are storing our files.
+        // Locations where the files are stored.
         public const string PrizesFile = "PrizeModels.csv";
         public const string PeopleFile = "PersonModels.csv";
         public const string TeamFile = "TeamModels.csv";
@@ -19,7 +19,7 @@ namespace TrackerLibrary
         public const string MatchupFile = "MatchupModels.csv";
         public const string MatchupEntryFile = "MatchupEntryModels.csv";
 
-        // Connection is either the SQLConnector class or the TextConnector class depending on what the user choooses.
+        // Connection is handled by either the SQLConnector or TextConnector class, depending on what the user chooses.
         public static IDataConnection Connection { get; private set; }
 
         // Called in Program.cs when the program starts up, and initialises either the SQL

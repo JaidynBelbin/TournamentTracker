@@ -406,6 +406,54 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             File.WriteAllLines(GlobalConfig.MatchupFile.FullFilePath(), lines);
         }
 
+        public static void UpdateMatchupToFile(this MatchupModel match)
+        {
+            // Reading our existing matches out of the textfile into a list of MatchupModel
+            List<MatchupModel> matches = GlobalConfig.MatchupFile.FullFilePath().LoadFile().ConvertToMatchupModels();
+
+            MatchupModel oldMatchup = new MatchupModel();
+            // Need to remove the current match in order to replace it with the updated one.
+            foreach (MatchupModel m in matches)
+            {
+                if (m.ID == match.ID)
+                {
+                    oldMatchup = m;
+                }
+            }
+
+            matches.Remove(oldMatchup);
+
+            // Adding our new match to the existing list
+            matches.Add(match);
+
+            // Then we save each entry in the match, before saving the match down below.
+            foreach (MatchupEntryModel entry in match.Entries)
+            {
+                entry.UpdateEntryToFile();
+            }
+
+            // ID = 0, TeamCompeting = 1, Score = 2, ParentMatchup = 3
+            List<string> lines = new List<string>();
+
+            foreach (MatchupModel m in matches)
+            {
+                string winner = "";
+
+                // Getting the winner ID if there is one, otherwise use an empty stting
+                if (m.Winner != null)
+                {
+                    winner = m.Winner.ID.ToString();
+                }
+
+                // 0 - ID, 1 - List<MatchupEntryModel>, 2 - TeamModel, 3 - Matchup Round
+                lines.Add($"{m.ID},{ConvertMatchupEntryListToIDString(m.Entries)},{winner},{m.MatchupRound}");
+
+            }
+
+            // Writing to the MatchupFile
+            File.WriteAllLines(GlobalConfig.MatchupFile.FullFilePath(), lines);
+        }
+
         public static void SaveEntryToFile(this MatchupEntryModel entry)
         {
             // Reading our existing entries out of the textfile into a list of MatchupEntryModel
@@ -451,6 +499,53 @@ namespace TrackerLibrary.DataAccess.TextHelpers
             File.WriteAllLines(GlobalConfig.MatchupEntryFile.FullFilePath(), lines);
         }
 
+        // Replaces the existing entry with the updated entry and saves it.
+        public static void UpdateEntryToFile(this MatchupEntryModel entry)
+        {
+            // Reading our existing entries out of the textfile into a list of MatchupEntryModel
+            List<MatchupEntryModel> entries = GlobalConfig.MatchupEntryFile.FullFilePath().LoadFile().ConvertToMatchupEntryModels();
+
+            MatchupEntryModel oldEntry = new MatchupEntryModel();
+
+            foreach (MatchupEntryModel e in entries)
+            {
+                if (e.ID == entry.ID)
+                {
+                    oldEntry = e;
+                }
+            }
+
+            // Removing the old entry
+            entries.Remove(oldEntry);
+
+            // Adding the new entry to the existing list
+            entries.Add(entry);
+
+            List<string> lines = new List<string>();
+
+            foreach (MatchupEntryModel e in entries)
+            {
+                string parentID = "";
+
+                // Checking for no existing parent matchup
+                if (e.ParentMatchup != null)
+                {
+                    parentID = e.ParentMatchup.ID.ToString();
+                }
+
+                string teamCompeting = "";
+
+                // Checking for no competing teams
+                if (e.TeamCompeting != null)
+                {
+                    teamCompeting = e.TeamCompeting.ID.ToString();
+                }
+
+                lines.Add($"{e.ID},{teamCompeting},{e.Score},{parentID}");
+            }
+
+            File.WriteAllLines(GlobalConfig.MatchupEntryFile.FullFilePath(), lines);
+        }
 
         public static void SaveToTournamentFile(this List<TournamentModel> models)
         {

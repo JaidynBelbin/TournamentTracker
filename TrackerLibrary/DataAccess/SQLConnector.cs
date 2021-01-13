@@ -20,7 +20,7 @@ namespace TrackerLibrary.DataAccess
         /// </summary>
         /// <param name="person">The person information.</param>
         /// <returns>The person information, including their unique identifier.</returns>
-        public PersonModel CreatePerson(PersonModel person)
+        public void CreatePerson(PersonModel person)
         {
             // The 'using' syntax properly closes the connection upon reaching the curly brace, preventing memory leaks.
             using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
@@ -44,8 +44,6 @@ namespace TrackerLibrary.DataAccess
                 // Looks at the dynamic parameter list p, gets the value called @id of type int and sets it
                 // as the model.ID value.
                 person.ID = p.Get<int>("@id");
-
-                return person;
             }
         }
 
@@ -54,7 +52,7 @@ namespace TrackerLibrary.DataAccess
         /// </summary>
         /// <param name="model">The prize information.</param>
         /// <returns>The prize information, including the unique identifier.</returns>
-        public PrizeModel CreatePrize(PrizeModel model)
+        public void CreatePrize(PrizeModel model)
         {
             // The 'using' syntax properly closes the connection upon reaching the curly brace, preventing memory leaks.
             using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
@@ -78,12 +76,10 @@ namespace TrackerLibrary.DataAccess
                 // Looks at the dynamic parameter list p, gets the value called @id of type int and sets it
                 // as the model.ID value.
                 model.ID = p.Get<int>("@id");
-
-                return model;
             }
         }
 
-        public TeamModel CreateTeam(TeamModel team)
+        public void CreateTeam(TeamModel team)
         {
             using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
@@ -113,8 +109,6 @@ namespace TrackerLibrary.DataAccess
 
                     connection.Execute("dbo.spTeamMembers_Insert", p, commandType: CommandType.StoredProcedure);
                 }
-
-                return team;
             }
         }
 

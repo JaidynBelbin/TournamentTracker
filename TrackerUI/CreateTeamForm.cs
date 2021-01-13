@@ -54,7 +54,7 @@ namespace TrackerUI
                     emailValue.Text,
                     cellphoneValue.Text);
 
-                person = GlobalConfig.Connection.CreatePerson(person);
+                GlobalConfig.Connection.CreatePerson(person);
 
                 // Adding the newly created member to the available people drop down.
                 availableTeamMembers.Add(person);

@@ -76,6 +76,103 @@ namespace TrackerLibrary
                 {
                     output += 1;
                 }
+                else
+                {
+                    return output; 
+                }
+            }
+
+            // If we reach here, then all of the rounds are complete, and the tournament is done
+            CompleteTournament(model);
+
+            return output - 1;
+        }
+
+        private static void CompleteTournament(TournamentModel model)
+        {
+            GlobalConfig.Connection.CompleteTournament(model);
+
+            MatchupModel finalMatch = model.Rounds.Last().First();
+
+            TeamModel winningTeam = finalMatch.Winner; 
+            TeamModel secondPlace = finalMatch.Entries.Where(x => x.TeamCompeting != winningTeam).First().TeamCompeting;
+
+            decimal winnerPrizeAmount = 0;
+            decimal secondPlacePrizeAmount = 0;
+
+            // Handling the prize money payouts
+            if (model.Prizes.Count > 0)
+            {
+                decimal totalIncome = model.EnteredTeams.Count * model.EntryFee;
+
+                PrizeModel firstPlacePrize = model.Prizes.Where(x => x.PlaceNumber == 1).FirstOrDefault();
+                PrizeModel secondPlacePrize = model.Prizes.Where(x => x.PlaceNumber == 2).FirstOrDefault();
+
+                if (firstPlacePrize != null)
+                {
+                    winnerPrizeAmount = firstPlacePrize.CalculatePayout(totalIncome);
+                }
+
+                if (secondPlacePrize != null)
+                {
+                    secondPlacePrizeAmount = secondPlacePrize.CalculatePayout(totalIncome);
+                }
+            }
+
+            string subject;
+            StringBuilder body = new StringBuilder();
+
+            
+            subject = $"{winningTeam.TeamName} won the {model.TournamentName}!";
+
+            body.AppendLine("<h1>We have a winner!</h1>");
+            body.Append("<p>Congratulations to the winners.</p>");
+            body.AppendLine("<br/>");
+
+            if (winnerPrizeAmount > 0)
+            {
+                body.AppendLine($"<p>{winningTeam.TeamName} will receive {winnerPrizeAmount}</p>");
+            }
+
+            if (secondPlacePrizeAmount > 0)
+            {
+                body.AppendLine($"<p>{secondPlace.TeamName} will receive {secondPlacePrizeAmount}</p>");
+            }
+
+
+            body.AppendLine("<p>Thanks to everyone for a great tournament!</p>");
+            body.AppendLine("~ Tournament Tracker");
+
+            List<string> bcc = new List<string>();
+
+            foreach (TeamModel t in model.EnteredTeams)
+            {
+                foreach (PersonModel p in t.TeamMembers)
+                {
+                    if (IsEmailValid(p.EmailAddress)) {
+
+                        bcc.Add(p.EmailAddress);
+
+                    }
+                }
+            }
+
+            EmailLogic.SendEmail(new List<string>(), bcc, subject, body.ToString());
+
+            model.CompleteTournament();
+        }
+
+        private static decimal CalculatePayout(this PrizeModel prize, decimal totalIncome)
+        {
+            decimal output;
+
+            if (prize.PrizeAmount > 0)
+            {
+                output = prize.PrizeAmount;
+
+            } else
+            {
+                output = decimal.Multiply(totalIncome, Convert.ToDecimal(prize.PrizePercentage / 100));
             }
 
             return output;
@@ -219,7 +316,8 @@ namespace TrackerLibrary
                 body.AppendLine("Have fun!");
                 body.AppendLine("~ Tournament Tracker");
 
-            } else
+            }
+            else
             {
                 subject = "You have a bye week this round!";
 
@@ -228,52 +326,10 @@ namespace TrackerLibrary
             }
 
             to = teamMember.EmailAddress;
-            
+
 
             EmailLogic.SendEmail(to, subject, body.ToString());
         }
-
-
-
-
-        //private static void AlertPersonToNewRound(PersonModel p, string teamName, MatchupEntryModel competitor)
-        //{
-        //    if (p.EmailAddress.Length > 0)
-        //    {
-        //        string to = "";
-        //        string subject = "";
-        //        StringBuilder body = new StringBuilder();
-
-        //        if (competitor != null)
-        //        {
-        //            subject = $"You have a new matchup with { competitor.TeamCompeting.TeamName }";
-
-        //            body.AppendLine("<h1>You have a new matchup</h1>");
-        //            body.Append("<strong>Competitor: </strong>");
-        //            body.Append(competitor.TeamCompeting.TeamName);
-        //            body.AppendLine();
-        //            body.AppendLine();
-        //            body.AppendLine("Have a great time!");
-        //            body.AppendLine("~Tournament Tracker");
-        //        }
-        //        else
-        //        {
-        //            subject = "You have a bye week this round";
-
-        //            body.AppendLine("Enjoy your round off!");
-        //            body.AppendLine("~Tournament Tracker");
-        //        }
-
-        //        to = p.EmailAddress;
-
-        //        EmailLogic.SendEmail(to, subject, body.ToString());
-        //    }
-
-        //    if (p.CellphoneNumber.Length > 0)
-        //    {
-        //        SMSLogic.SendSMSMessage(p.CellphoneNumber, $"You have a new matchup with { competitor.TeamCompeting.TeamName }");
-        //    }
-        //}
 
         private static void CreateOtherRounds(TournamentModel model, int rounds)
         {

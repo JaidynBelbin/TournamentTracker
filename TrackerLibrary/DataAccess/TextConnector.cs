@@ -10,7 +10,8 @@ namespace TrackerLibrary.DataAccess
 {
     public class TextConnector : IDataConnection
     {
-  
+        
+
         /// <summary>
         /// Saves a new person to a text file.
         /// </summary>
@@ -106,6 +107,20 @@ namespace TrackerLibrary.DataAccess
             model.SaveRoundsToFile();
 
             tournaments.Add(model);
+
+            tournaments.SaveToTournamentFile();
+
+            TournamentLogic.UpdateTournamentResults(model);
+        }
+
+        public void CompleteTournament(TournamentModel model)
+        {
+            List<TournamentModel> tournaments = GlobalConfig.TournamentFile
+                .FullFilePath()
+                .LoadFile()
+                .ConvertToTournamentModels();
+
+            tournaments.Remove(model);
 
             tournaments.SaveToTournamentFile();
 

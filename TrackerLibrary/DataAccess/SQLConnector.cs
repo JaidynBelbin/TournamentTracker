@@ -350,5 +350,18 @@ namespace TrackerLibrary.DataAccess
                 }
             }
         }
+
+        // Setting the Active property to 0 in the DB
+        public void CompleteTournament(TournamentModel model)
+        {
+            using (IDbConnection connection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
+            {
+                var p = new DynamicParameters();
+
+                p.Add("@id", model.ID);
+
+                connection.Execute("dbo.spTournaments_Complete", p, commandType: CommandType.StoredProcedure);
+            }
+        }
     }
 }

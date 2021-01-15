@@ -24,7 +24,7 @@ namespace TrackerUI
 
             tournament = tournamentModel;
 
-            //tournament.OnTournamentComplete += Tournament_OnTournamentComplete;
+            tournament.OnTournamentComplete += Tournament_OnTournamentComplete;
 
             WireUpLists();
 
@@ -33,6 +33,7 @@ namespace TrackerUI
             LoadRounds();
         }
 
+        // Event listener for the OnTournamentComplete event
         private void Tournament_OnTournamentComplete(object sender, DateTime e)
         {
             this.Close();

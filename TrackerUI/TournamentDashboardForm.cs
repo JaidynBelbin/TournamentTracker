@@ -16,37 +16,30 @@ namespace TrackerUI
     {
         List<TournamentModel> tournaments = GlobalConfig.Connection.GetTournament_All();
 
-        private void WireUpList()
+        public TournamentDashboardForm()
+        {
+            InitializeComponent();
+
+            WireUpLists();
+        }
+
+        private void WireUpLists()
         {
             loadExistingTournamentDropDown.DataSource = tournaments;
             loadExistingTournamentDropDown.DisplayMember = "TournamentName";
         }
 
-        public TournamentDashboardForm()
-        {
-            InitializeComponent();
-
-            WireUpList();
-        }
-
         private void createTournamentButton_Click(object sender, EventArgs e)
         {
-            CreateTournamentForm form = new CreateTournamentForm();
-            form.Show();
+            CreateTournamentForm frm = new CreateTournamentForm();
+            frm.Show();
         }
 
         private void loadTournamentButton_Click(object sender, EventArgs e)
         {
-            if (tournaments.Count == 0)
-            {
-                MessageBox.Show("You need to create a tournament first!");
-
-            } else
-            {
-                TournamentViewerForm form = new TournamentViewerForm((TournamentModel)loadExistingTournamentDropDown.SelectedItem);
-
-                form.Show();
-            }
+            TournamentModel tm = (TournamentModel)loadExistingTournamentDropDown.SelectedItem;
+            TournamentViewerForm frm = new TournamentViewerForm(tm);
+            frm.Show();
         }
     }
 }

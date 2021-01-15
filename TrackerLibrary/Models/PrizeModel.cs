@@ -46,7 +46,6 @@ namespace TrackerLibrary.Models
         /// <summary>
         /// Overloaded constructor to parse all the number values to strings.
         /// </summary>
-
         public PrizeModel(string placeName, string placeNumber, string prizeAmount, string prizePercentage)
         {
             PlaceName = placeName;

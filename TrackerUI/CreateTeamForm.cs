@@ -49,15 +49,17 @@ namespace TrackerUI
         {
             if (ValidateForm())
             {
-                PersonModel person = new PersonModel(firstNameValue.Text,
-                    lastNameValue.Text,
-                    emailValue.Text,
-                    cellphoneValue.Text);
+                PersonModel p = new PersonModel();
 
-                GlobalConfig.Connection.CreatePerson(person);
+                p.FirstName = firstNameValue.Text;
+                p.LastName = lastNameValue.Text;
+                p.EmailAddress = emailValue.Text;
+                p.CellphoneNumber = cellphoneValue.Text;
+
+                GlobalConfig.Connection.CreatePerson(p);
 
                 // Adding the newly created member to the available people drop down.
-                availableTeamMembers.Add(person);
+                availableTeamMembers.Add(p);
 
                 // Refreshing the dropdown and the list box.
                 WireUpLists();
@@ -67,8 +69,6 @@ namespace TrackerUI
                 lastNameValue.Text = "";
                 emailValue.Text = "";
                 cellphoneValue.Text = "";
-
-                MessageBox.Show("Team member successfully created!");
             }
             else
             {

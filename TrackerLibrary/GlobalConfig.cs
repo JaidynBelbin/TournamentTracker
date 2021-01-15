@@ -28,16 +28,14 @@ namespace TrackerLibrary
         {
             if (db == DatabaseType.SQL)
             {
-                // Create an SQL connection and run SQLConnector.CreatePrize()
-                // SQLConnector sql = new SQLConnector();
+                // Creating the SQL connection
                 Connection = new SQLConnector();
 
             }
 
             else if (db == DatabaseType.Textfile)
             {
-                // Create a text connection and run TextConnector.CreatePrize()
-                // TextConnector text = new TextConnector();
+                // Creating the text connection
                 Connection = new TextConnector();
             }
         }
@@ -50,6 +48,11 @@ namespace TrackerLibrary
         public static string ConnectionString(string name)
         {
             return ConfigurationManager.ConnectionStrings[name].ConnectionString;
+        }
+
+        public static string AppKeyLookup(string key)
+        {
+            return ConfigurationManager.AppSettings[key];
         }
     }
 }

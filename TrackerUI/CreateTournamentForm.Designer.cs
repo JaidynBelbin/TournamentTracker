@@ -45,7 +45,7 @@ namespace TrackerUI
             this.tournamentPlayersListBox = new System.Windows.Forms.ListBox();
             this.tournamentPlayersLabel = new System.Windows.Forms.Label();
             this.prizesLabel = new System.Windows.Forms.Label();
-            this.prizeslistBox = new System.Windows.Forms.ListBox();
+            this.prizesListBox = new System.Windows.Forms.ListBox();
             this.deleteSelectedPlayerButton = new System.Windows.Forms.Button();
             this.deleteSelectedPrizeButton = new System.Windows.Forms.Button();
             this.createTournamentButton = new System.Windows.Forms.Button();
@@ -193,15 +193,15 @@ namespace TrackerUI
             this.prizesLabel.TabIndex = 21;
             this.prizesLabel.Text = "Prizes";
             // 
-            // prizeslistBox
+            // prizesListBox
             // 
-            this.prizeslistBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.prizeslistBox.FormattingEnabled = true;
-            this.prizeslistBox.ItemHeight = 30;
-            this.prizeslistBox.Location = new System.Drawing.Point(428, 362);
-            this.prizeslistBox.Name = "prizeslistBox";
-            this.prizeslistBox.Size = new System.Drawing.Size(346, 152);
-            this.prizeslistBox.TabIndex = 20;
+            this.prizesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.prizesListBox.FormattingEnabled = true;
+            this.prizesListBox.ItemHeight = 30;
+            this.prizesListBox.Location = new System.Drawing.Point(428, 362);
+            this.prizesListBox.Name = "prizesListBox";
+            this.prizesListBox.Size = new System.Drawing.Size(346, 152);
+            this.prizesListBox.TabIndex = 20;
             // 
             // deleteSelectedPlayerButton
             // 
@@ -261,7 +261,7 @@ namespace TrackerUI
             this.Controls.Add(this.deleteSelectedPrizeButton);
             this.Controls.Add(this.deleteSelectedPlayerButton);
             this.Controls.Add(this.prizesLabel);
-            this.Controls.Add(this.prizeslistBox);
+            this.Controls.Add(this.prizesListBox);
             this.Controls.Add(this.tournamentPlayersLabel);
             this.Controls.Add(this.tournamentPlayersListBox);
             this.Controls.Add(this.createPrizeButton);
@@ -299,7 +299,7 @@ namespace TrackerUI
         private System.Windows.Forms.ListBox tournamentPlayersListBox;
         private System.Windows.Forms.Label tournamentPlayersLabel;
         private System.Windows.Forms.Label prizesLabel;
-        private System.Windows.Forms.ListBox prizeslistBox;
+        private System.Windows.Forms.ListBox prizesListBox;
         private System.Windows.Forms.Button deleteSelectedPlayerButton;
         private System.Windows.Forms.Button deleteSelectedPrizeButton;
         private System.Windows.Forms.Button createTournamentButton;

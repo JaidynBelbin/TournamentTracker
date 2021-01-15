@@ -14,10 +14,10 @@ namespace TrackerUI
 {
     public partial class CreateTournamentForm : Form, IPrizeRequester, ITeamRequester
     {
-
         List<TeamModel> availableTeams = GlobalConfig.Connection.GetTeam_All();
         List<TeamModel> selectedTeams = new List<TeamModel>();
         List<PrizeModel> selectedPrizes = new List<PrizeModel>();
+
         public CreateTournamentForm()
         {
             InitializeComponent();
@@ -35,12 +35,11 @@ namespace TrackerUI
             tournamentPlayersListBox.DataSource = selectedTeams;
             tournamentPlayersListBox.DisplayMember = "TeamName";
 
-            prizeslistBox.DataSource = null;
-            prizeslistBox.DataSource = selectedPrizes;
-            prizeslistBox.DisplayMember = "PlaceName";
+            prizesListBox.DataSource = null;
+            prizesListBox.DataSource = selectedPrizes;
+            prizesListBox.DisplayMember = "PlaceName";
         }
 
-        // Moving the selected team from the dropdown into the ListBox.
         private void addTeamButton_Click(object sender, EventArgs e)
         {
             TeamModel t = (TeamModel)selectTeamDropDown.SelectedItem;
@@ -54,46 +53,17 @@ namespace TrackerUI
             }
         }
 
-        private void deleteSelectedPlayerButton_Click(object sender, EventArgs e)
-        {
-            TeamModel t = (TeamModel)tournamentPlayersListBox.SelectedItem;
-
-            if (t != null)
-            {
-                availableTeams.Add(t);
-                selectedTeams.Remove(t);
-
-                WireUpLists();
-            }
-        }
-
-        private void deleteSelectedPrizeButton_Click(object sender, EventArgs e)
-        {
-            PrizeModel p = (PrizeModel)prizeslistBox.SelectedItem;
-
-            if (p != null)
-            {
-                selectedPrizes.Remove(p);
-
-                // TODO - Create some way of either saving the already created Prizes and allowing the user
-                // to select one, or delete the Prize upon removing it from this listBox.
-                WireUpLists();
-            }
-        }
-
         private void createPrizeButton_Click(object sender, EventArgs e)
         {
-            // Opening the CreatePrizeForm and passing in this instance of the CreateTournamentForm.
-            // An example of 'loosely binding' two forms together.
-
-            CreatePrizeForm form = new CreatePrizeForm(this);
-            form.Show();
+            // Call the CreatePrizeForm
+            CreatePrizeForm frm = new CreatePrizeForm(this);
+            frm.Show();
         }
 
-        // The CreatePrizeForm and CreateTeamForm classes, and the completed models are the ones that we
-        // fill out in the form.
         public void PrizeComplete(PrizeModel model)
         {
+            // Get back from the form a PrizeModel
+            // Take the PrizeModel and put it into our list of selected prizes
             selectedPrizes.Add(model);
             WireUpLists();
         }
@@ -106,47 +76,71 @@ namespace TrackerUI
 
         private void createNewTeamLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            CreateTeamForm form = new CreateTeamForm(this);
-            form.Show();
+            CreateTeamForm frm = new CreateTeamForm(this);
+            frm.Show();
+        }
+
+        private void deleteSelectedPlayerButton_Click(object sender, EventArgs e)
+        {
+            TeamModel t = (TeamModel)tournamentPlayersListBox.SelectedItem;
+
+            if (t != null)
+            {
+                selectedTeams.Remove(t);
+                availableTeams.Add(t);
+
+                WireUpLists();
+            }
+        }
+
+        private void deleteSelectedPrizeButton_Click(object sender, EventArgs e)
+        {
+            PrizeModel p = (PrizeModel)prizesListBox.SelectedItem;
+
+            if (p != null)
+            {
+                selectedPrizes.Remove(p);
+
+                WireUpLists();
+            }
         }
 
         private void createTournamentButton_Click(object sender, EventArgs e)
         {
-            // Need to check if the entered entry fee is able to be converted to a decimal: if yes, output it to the variable 'fee'.
-            // If not, display an error message. We don't want the program to crash at this point.
+            
+            bool feeAcceptable = decimal.TryParse(entryFeeValue.Text, out decimal fee);
 
-            bool feeValid = decimal.TryParse(entryFeeValue.Text, out decimal fee);
-
-            if (!feeValid)
+            if (!feeAcceptable)
             {
-                MessageBox.Show("You need to enter a valid entry fee.", 
-                    "Invalid Fee", 
-                    MessageBoxButtons.OK, 
+                MessageBox.Show("You need to enter a valid Entry Fee.",
+                    "Invalid Fee",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-
                 return;
             }
 
-            // Creating our tournament model.
+            // Create our tournament model
+            TournamentModel tm = new TournamentModel();
 
-            TournamentModel tournament = new TournamentModel
-            {
-                TournamentName = tournamentNameValue.Text,
-                EntryFee = fee,
-                Prizes = selectedPrizes,
-                EnteredTeams = selectedTeams
-            };
-             
-            TournamentLogic.CreateRounds(tournament);
-                               
+            tm.TournamentName = tournamentNameValue.Text;
+            tm.EntryFee = fee;
+
+            tm.Prizes = selectedPrizes;
+            tm.EnteredTeams = selectedTeams;
+
+            // Wire our matchups
+            TournamentLogic.CreateRounds(tm);
 
             // Create Tournament entry
-            // Create all of the prize entries
-            // Create all of the team entries
+            // Create all of the prizes entries
+            // Create all of team entries
+            GlobalConfig.Connection.CreateTournament(tm);
 
-            // Create our matchups of teams
+            //tm.AlertUsersToNewRound();
 
-            GlobalConfig.Connection.CreateTournament(tournament);
+            TournamentViewerForm frm = new TournamentViewerForm(tm);
+            frm.Show();
+            Close();
         }
     }
 }

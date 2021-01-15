@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using TrackerLibrary.Models;
 
 namespace TrackerLibrary
@@ -28,7 +30,8 @@ namespace TrackerLibrary
 
         public static void UpdateTournamentResults(TournamentModel model)
         {
-            //int startingRound = model.CheckCurrentRound();
+            int startingRound = model.CheckCurrentRound();
+
             List<MatchupModel> toScore = new List<MatchupModel>();
 
             foreach (List<MatchupModel> round in model.Rounds)
@@ -51,76 +54,24 @@ namespace TrackerLibrary
 
             toScore.ForEach(x => GlobalConfig.Connection.UpdateMatchup(x)); // Saving the scored matches and entries to the DB
 
-            //int endingRound = model.CheckCurrentRound();
+            int endingRound = model.CheckCurrentRound();
 
-            //if (endingRound > startingRound)
-            //{
-            //    model.AlertUsersToNewRound();
-            //}
+            if (endingRound > startingRound)
+            {
+                model.AlertUsersToNewRound();
+            }
         }
 
-        //public static void AlertUsersToNewRound(this TournamentModel model)
-        //{
-        //    int currentRoundNumber = model.CheckCurrentRound();
-        //    List<MatchupModel> currentRound = model.Rounds.Where(x => x.First().MatchupRound == currentRoundNumber).First();
+        
 
-        //    foreach (MatchupModel matchup in currentRound)
-        //    {
-        //        foreach (MatchupEntryModel me in matchup.Entries)
-        //        {
-        //            foreach (PersonModel p in me.TeamCompeting.TeamMembers)
-        //            {
-        //                AlertPersonToNewRound(p, me.TeamCompeting.TeamName, matchup.Entries.Where(x => x.TeamCompeting != me.TeamCompeting).FirstOrDefault());
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private static void AlertPersonToNewRound(PersonModel p, string teamName, MatchupEntryModel competitor)
-        //{
-        //    if (p.EmailAddress.Length > 0)
-        //    {
-        //        string to = "";
-        //        string subject = "";
-        //        StringBuilder body = new StringBuilder();
-
-        //        if (competitor != null)
-        //        {
-        //            subject = $"You have a new matchup with { competitor.TeamCompeting.TeamName }";
-
-        //            body.AppendLine("<h1>You have a new matchup</h1>");
-        //            body.Append("<strong>Competitor: </strong>");
-        //            body.Append(competitor.TeamCompeting.TeamName);
-        //            body.AppendLine();
-        //            body.AppendLine();
-        //            body.AppendLine("Have a great time!");
-        //            body.AppendLine("~Tournament Tracker");
-        //        }
-        //        else
-        //        {
-        //            subject = "You have a bye week this round";
-
-        //            body.AppendLine("Enjoy your round off!");
-        //            body.AppendLine("~Tournament Tracker");
-        //        }
-
-        //        to = p.EmailAddress;
-
-        //        EmailLogic.SendEmail(to, subject, body.ToString());
-        //    }
-
-        //    if (p.CellphoneNumber.Length > 0)
-        //    {
-        //        SMSLogic.SendSMSMessage(p.CellphoneNumber, $"You have a new matchup with { competitor.TeamCompeting.TeamName }");
-        //    }
-        //}
-
+        // Checks if the current round is complete, and returns the round number
         private static int CheckCurrentRound(this TournamentModel model)
         {
             int output = 1;
 
             foreach (List<MatchupModel> round in model.Rounds)
             {
+                // If all of the matches have a winner, then the round is complete.
                 if (round.All(x => x.Winner != null))
                 {
                     output += 1;
@@ -132,20 +83,25 @@ namespace TrackerLibrary
 
         private static void AdvanceWinners(List<MatchupModel> models, TournamentModel tournament)
         {
+            
             foreach (MatchupModel m in models)
             {
                 foreach (List<MatchupModel> round in tournament.Rounds)
                 {
                     foreach (MatchupModel rm in round)
                     {
+                        // Looping through each matchup entry in the tournament
                         foreach (MatchupEntryModel me in rm.Entries)
                         {
                             if (me.ParentMatchup != null)
-                            {
+                            { 
+                                // If the matchup came from this round...
                                 if (me.ParentMatchup.ID == m.ID)
                                 {
+                                    // then the team competing in the matchup is the winner
+                                    // from its parent round.
                                     me.TeamCompeting = m.Winner;
-                                    GlobalConfig.Connection.UpdateMatchup(rm);
+                                    GlobalConfig.Connection.UpdateMatchup(rm); // Updating the matchups in the file.
                                 }
                             }
                         }
@@ -201,6 +157,123 @@ namespace TrackerLibrary
                 }
             }
         }
+
+        public static void AlertUsersToNewRound(this TournamentModel model)
+        {
+            // Checking what round we are on
+            int currentRoundNumber = model.CheckCurrentRound();
+
+            List<MatchupModel> currentRound = model.Rounds.Where(x => x.First().MatchupRound == currentRoundNumber).First();
+
+            // Getting each person competing in the tournament
+            foreach(MatchupModel match in currentRound)
+            {
+                foreach(MatchupEntryModel entry in match.Entries)
+                {
+                    foreach (PersonModel teamMember in entry.TeamCompeting.TeamMembers)
+                    {
+                        // Alerting each person to the new matchup
+                        AlertPersonToNewRound(teamMember, entry.TeamCompeting.TeamName, match.Entries.Where(x => x.TeamCompeting != entry.TeamCompeting).FirstOrDefault());
+                    }
+                }
+            }
+        }
+
+        
+        private static bool IsEmailValid (string emailAddress)
+        {
+            try
+            {
+                MailAddress mailAddress = new MailAddress(emailAddress);
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void AlertPersonToNewRound(PersonModel teamMember, string teamName, MatchupEntryModel competitor)
+        {
+            if (!IsEmailValid(teamMember.EmailAddress))
+            {
+                return;
+            }
+
+            string to;
+            string subject;
+            StringBuilder body = new StringBuilder();
+
+            if (competitor != null)
+            {
+                subject = $"You are competing against {competitor.TeamCompeting.TeamName}";
+
+                body.AppendLine("<h1>You have a new matchup!</h1>");
+                body.Append("<strong>Competitor: </strong>");
+                body.Append(competitor.TeamCompeting.TeamName);
+                body.AppendLine();
+                body.AppendLine();
+                body.AppendLine("Have fun!");
+                body.AppendLine("~ Tournament Tracker");
+
+            } else
+            {
+                subject = "You have a bye week this round!";
+
+                body.AppendLine("Enjoy your round off!");
+                body.AppendLine("~ Tournament Tracker");
+            }
+
+            to = teamMember.EmailAddress;
+            
+
+            EmailLogic.SendEmail(to, subject, body.ToString());
+        }
+
+
+
+
+        //private static void AlertPersonToNewRound(PersonModel p, string teamName, MatchupEntryModel competitor)
+        //{
+        //    if (p.EmailAddress.Length > 0)
+        //    {
+        //        string to = "";
+        //        string subject = "";
+        //        StringBuilder body = new StringBuilder();
+
+        //        if (competitor != null)
+        //        {
+        //            subject = $"You have a new matchup with { competitor.TeamCompeting.TeamName }";
+
+        //            body.AppendLine("<h1>You have a new matchup</h1>");
+        //            body.Append("<strong>Competitor: </strong>");
+        //            body.Append(competitor.TeamCompeting.TeamName);
+        //            body.AppendLine();
+        //            body.AppendLine();
+        //            body.AppendLine("Have a great time!");
+        //            body.AppendLine("~Tournament Tracker");
+        //        }
+        //        else
+        //        {
+        //            subject = "You have a bye week this round";
+
+        //            body.AppendLine("Enjoy your round off!");
+        //            body.AppendLine("~Tournament Tracker");
+        //        }
+
+        //        to = p.EmailAddress;
+
+        //        EmailLogic.SendEmail(to, subject, body.ToString());
+        //    }
+
+        //    if (p.CellphoneNumber.Length > 0)
+        //    {
+        //        SMSLogic.SendSMSMessage(p.CellphoneNumber, $"You have a new matchup with { competitor.TeamCompeting.TeamName }");
+        //    }
+        //}
 
         private static void CreateOtherRounds(TournamentModel model, int rounds)
         {

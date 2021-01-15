@@ -170,11 +170,8 @@ namespace TrackerUI
         {
             string output = "";
 
-            double teamOneScore = 0;
-            double teamTwoScore = 0;
-
-            bool scoreOneValid = double.TryParse(teamOneScoreValue.Text, out teamOneScore);
-            bool scoreTwoValid = double.TryParse(teamTwoScoreValue.Text, out teamTwoScore);
+            bool scoreOneValid = double.TryParse(teamOneScoreValue.Text, out double teamOneScore);
+            bool scoreTwoValid = double.TryParse(teamTwoScoreValue.Text, out double teamTwoScore);
 
             if (!scoreOneValid)
             {
@@ -207,8 +204,6 @@ namespace TrackerUI
             }
 
             MatchupModel m = (MatchupModel)matchupListBox.SelectedItem;
-            double teamOneScore = 0;
-            double teamTwoScore = 0;
 
             for (int i = 0; i < m.Entries.Count; i++)
             {
@@ -216,7 +211,7 @@ namespace TrackerUI
                 {
                     if (m.Entries[0].TeamCompeting != null)
                     {
-                        bool scoreValid = double.TryParse(teamOneScoreValue.Text, out teamOneScore);
+                        bool scoreValid = double.TryParse(teamOneScoreValue.Text, out double teamOneScore);
 
                         if (scoreValid)
                         {
@@ -234,7 +229,7 @@ namespace TrackerUI
                 {
                     if (m.Entries[1].TeamCompeting != null)
                     {
-                        bool scoreValid = double.TryParse(teamTwoScoreValue.Text, out teamTwoScore);
+                        bool scoreValid = double.TryParse(teamTwoScoreValue.Text, out double teamTwoScore);
 
                         if (scoreValid)
                         {

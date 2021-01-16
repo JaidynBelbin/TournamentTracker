@@ -15,12 +15,5 @@ After each round, an email is sent to each team member notifying them of what te
 
 In the final version, the user will have the option to save the data to *either* a CSV file or an SQL database. Currently there is a bug preventing the SQL option from working correctly, so currently the CSV file is the only option. In order to save to a CSV file, simply provide the desired file path from the Welcome form, and away you go.
 
-# Coming Soon:
-
-> Fix for the SQL issue
-
-> Fix for finding SMTP client
-
-> Handling format of final email when no prizes in Tournament
 
 
